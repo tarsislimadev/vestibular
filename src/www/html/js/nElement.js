@@ -102,8 +102,9 @@ class nElement {
     return this
   }
 
-  dispatch(name, value = {}) {
+  dispatch(name, data = {}) {
     const event = new Event(name)
+    event.data = data
 
     this.element.dispatchEvent(event)
 

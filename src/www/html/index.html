@@ -24,12 +24,19 @@
     header.append(title)
     app.append(header)
 
+    const testsEl = new nElement()
+    app.append(testsEl)
+
     const questionsEl = new nElement()
     app.append(questionsEl)
 
     class Question extends nElement {
-      constructor({ question = [], answers = [], right = 0 }) {
-        super({ component: { name: 'question' } })
+      constructor({ question = [], answers = [], right = 0 } = {}) {
+        super({
+          component: {
+            name: 'question'
+          }
+        })
 
         this.question = question
         this.answers = answers
@@ -38,8 +45,8 @@
         this.append(this.getQuestionHTML())
         this.append(this.getAnswersHTML())
 
-        this.on('rightanswer', () => console.log('Right answer!'))
-        this.on('wronganswer', () => console.log('Wrong answer!'))
+        this.on('rightanswer', (answer) => console.log('Right answer!' + JSON.stringify(answer)))
+        this.on('wronganswer', (answer) => console.log('Wrong answer!' + JSON.stringify(answer)))
       }
 
       getQuestionHTML() {
@@ -70,13 +77,13 @@
 
         const el = new nElement()
 
-        this.answers.map((q, ix) => {
+        this.answers.map((q, answer) => {
           const answerEl = new nElement()
-          answerEl.setText(`${String.fromCharCode(97 + ix)}: `)
+          answerEl.setText(`${String.fromCharCode(97 + answer)}: `)
           answerEl.on('click', () => {
-            self.right === ix
-              ? self.dispatch('rightanswer')
-              : self.dispatch('wronganswer')
+            self.right === answer
+              ? self.dispatch('rightanswer', { answer })
+              : self.dispatch('wronganswer', { answer })
           })
 
           switch (q.type) {
@@ -107,28 +114,48 @@
         when: '2022-1',
         which: 0,
       }
-    ].map(({ where, when, which }) => {
-      const el = new nElement()
+    ]
 
-      const whereEl = new nElement()
-      whereEl.setText(where)
-      el.append(whereEl)
+    const clearLists = () => {
+      while (tests.length > 0)
+        tests.shift()
 
-      const whenEl = new nElement()
-      whenEl.setText(when)
-      el.append(whenEl)
+      testsEl.clear()
+      questionsEl.clear()
+    }
 
-      const startButton = new nButton()
-      startButton.setText('Start')
-      startButton.on('click', () => {
-        API.getTest({ where, when, which })
-          .then((res) => res.get('list').map((q) => questionsEl.append(new Question(q))))
-          .catch((err) => console.error(err))
+    const setTestsList = (tests = []) => {
+      tests.map(({ where, when, which = 0 }) => {
+        const el = new nElement()
+
+        const whereEl = new nElement()
+        whereEl.setText(where)
+        el.append(whereEl)
+
+        const whenEl = new nElement()
+        whenEl.setText(when)
+        el.append(whenEl)
+
+        const startButton = new nButton()
+        startButton.setText('Start')
+        startButton.on('click', () => {
+          clearLists()
+          API.getTest({ where, when, which })
+            .then((res) => res.get('list').map((q) => questionsEl.append(new Question(q))))
+            .catch((err) => console.error(err))
+        })
+        el.append(startButton)
+
+        testsEl.append(el)
       })
-      el.append(startButton)
+    }
 
-      app.append(el)
-    })
+    API.getTestsList({})
+      .then((res) => [
+        clearLists(),
+        setTestsList(res.get('list', [])),
+      ])
+      .catch((err) => console.error(err))
 
   </script>
 </body>

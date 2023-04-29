@@ -67,5 +67,8 @@ Ajax.send = (method = 'POST', url = [], data = {}) => {
 
 const API = {}
 
-API.getTest = ({ where, when, which = 0 }) =>
+API.getTest = ({ where, when, which = 0 } = {}) =>
   Ajax.send('GET', [Ajax.SERVERS[0], 'tests', where, when, `${which}.json`])
+
+API.getTestsList = ({ } = {}) =>
+  Ajax.send('GET', [Ajax.SERVERS[0], 'tests', 'index.json'])
