@@ -1,0 +1,13 @@
+{
+  "status": "ok",
+  "message": null,
+  "data": {
+    "list": [
+      {
+        "where": "UNESP",
+        "when": "2022-1",
+        "which": 0
+      }
+    ]
+  }
+}
