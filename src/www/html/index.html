@@ -12,6 +12,7 @@
   <div id="app"></div>
 
   <script src="./js/nElement.js"></script>
+  <script src="./js/components.js"></script>
   <script src="./js/api.js"></script>
   <script>
     const app = nElement.fromId('app')
@@ -29,84 +30,6 @@
 
     const questionsEl = new nElement()
     app.append(questionsEl)
-
-    class Question extends nElement {
-      constructor({ question = [], answers = [], right = 0 } = {}) {
-        super({
-          component: {
-            name: 'question'
-          }
-        })
-
-        this.question = question
-        this.answers = answers
-        this.right = right
-
-        this.append(this.getQuestionHTML())
-        this.append(this.getAnswersHTML())
-
-        this.on('rightanswer', (answer) => console.log('Right answer!' + JSON.stringify(answer)))
-        this.on('wronganswer', (answer) => console.log('Wrong answer!' + JSON.stringify(answer)))
-      }
-
-      getQuestionHTML() {
-        const el = new nElement()
-
-        this.question.map((q) => {
-          switch (q.type) {
-            case 'text': {
-              const textEl = new nElement()
-              textEl.setText(q.text)
-              el.append(textEl)
-            }; break;
-
-            case 'image': {
-              const imageEl = new nImage()
-              imageEl.href(q.link)
-              imageEl.alt('image')
-              el.append(imageEl)
-            }; break;
-          }
-        })
-
-        return el
-      }
-
-      getAnswersHTML() {
-        const self = this
-
-        const el = new nElement()
-
-        this.answers.map((q, answer) => {
-          const answerEl = new nElement()
-          answerEl.setText(`${String.fromCharCode(97 + answer)}: `)
-          answerEl.on('click', () => {
-            self.right === answer
-              ? self.dispatch('rightanswer', { answer })
-              : self.dispatch('wronganswer', { answer })
-          })
-
-          switch (q.type) {
-            case 'text': {
-              const textEl = new nElement()
-              textEl.setText(q.text)
-              answerEl.append(textEl)
-            }; break;
-
-            case 'image': {
-              const imageEl = new nImage()
-              imageEl.href(q.link)
-              imageEl.alt('image')
-              answerEl.append(imageEl)
-            }; break;
-          }
-
-          el.append(answerEl)
-        })
-
-        return el
-      }
-    }
 
     const tests = [
       {
@@ -136,15 +59,15 @@
         whenEl.setText(when)
         el.append(whenEl)
 
-        const startButton = new nButton()
-        startButton.setText('Start')
-        startButton.on('click', () => {
+        const button = new nButton()
+        button.setText('Start')
+        button.on('click', () => {
           clearLists()
           API.getTest({ where, when, which })
             .then((res) => res.get('list').map((q) => questionsEl.append(new Question(q))))
             .catch((err) => console.error(err))
         })
-        el.append(startButton)
+        el.append(button)
 
         testsEl.append(el)
       })
